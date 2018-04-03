@@ -21,8 +21,8 @@ int main(int argc, char* argv[]) {
 	unsigned int fromSize;				// In-out of address size for recvfrom()
 	char* serverIP;						// IP address of server
 	char* msgToSend;					// Message to send to server
-	char buffer[BUFFER_SIZE];			// Buffer for receiving messages
-	int msgToSendLen;							// Length of message to send
+	char buffer[BUFFER_SIZE + 1];		// Buffer for receiving messages
+	int msgToSendLen;					// Length of message to send
 	int receivedMsgLen;					// Length of received message
 
 	if ((argc < 3) || (argc > 4)) { 	// Test for correct number of arguments
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
 	// Construct the server address structure
 	memset(&serverAddress, 0, sizeof(serverAddress));			// Zero out structure
 	serverAddress.sin_family = AF_INET;							// Internet addr family
-	serverAddress.sin_addr.s_addr = inet_addr(serverIP);				// Server IP address
+	serverAddress.sin_addr.s_addr = inet_addr(serverIP);		// Server IP address
 	serverAddress.sin_port = htons(serverPort);					// Server Port
 
 	printf("Sending message to server...\n");
