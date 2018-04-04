@@ -17,7 +17,7 @@ int main(int argc, char* argv[]) {
 	int sock;							// Socket descriptor
 	struct sockaddr_in serverAddress;	// Server address
 	struct sockaddr_in fromAddress;		// Source address of the received message
-	unsigned char serverPort;			// Server port
+	unsigned short serverPort;			// Server port
 	unsigned int fromSize;				// In-out of address size for recvfrom()
 	char* serverIP;						// IP address of server
 	char* msgToSend;					// Message to send to server
