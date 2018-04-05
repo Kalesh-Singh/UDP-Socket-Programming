@@ -20,26 +20,24 @@ int main(int argc, char* argv[]) {
 	unsigned short serverPort;			// Server port
 	unsigned int fromSize;				// In-out of address size for recvfrom()
 	char* serverIP;						// IP address of server
-	char* msgToSend;					// Message to send to server
-	char buffer[BUFFER_SIZE + 1];		// Buffer for receiving messages
-	int msgToSendLen;					// Length of message to send
-	int receivedMsgLen;					// Length of received message
+	char* filePath;						// Name (or path of file to send)
+	char buffer[BUFFER_SIZE];			// Buffer for receiving messages
+	unsigned long bytesToSend;			// Number of bytes to send to the server
+	unsigned long bytesSent;			// Number of bytes sent
+	unsigned char ack;
+	unsigned char positiveAck = 1;
+	char serverResponse;		// Server response (Success or Format error)
+	unsigned long bytesToReceive;		// Number of bytes to receive from server
+	unsigned long bytesReceived;		// Number of bytes received
 
-	if ((argc < 3) || (argc > 4)) { 	// Test for correct number of arguments
-		fprintf(stderr, "Usage: %s <Server IP> <Echo Word> [<Echo Port>]\n", argv[0]);
+	if ((argc != 4)) { 					// Test for correct number of arguments
+		fprintf(stderr, "Usage: %s <Server IP> <Server Port> <File Path>\n", argv[0]);
 		exit(1);
 	}
 
-	serverIP = argv[1];			// First arg: server IP address (dotted quad)
-	msgToSend = argv[2];		// Second arg: message to send
-
-	if ((msgToSendLen = strlen(msgToSend)) > BUFFER_SIZE)		// Check message length
-		DieWithError("Message too long");
-
-	if (argc == 4)
-		serverPort = atoi(argv[3]);		// Use the give port; if any
-	else
-		serverPort = 7;					// 7 is a well known port for echo service
+	serverIP = argv[1];					// First arg: server IP address (dotted quad)
+	serverPort = atoi(argv[2]);			// Second arg: server port number
+	filePath = argv[3];					// Third arg: file to send
 
 	// Create a datagram/UDP socket
 	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
@@ -53,29 +51,106 @@ int main(int argc, char* argv[]) {
 
 	printf("Sending message to server...\n");
 
-	// Send the message to the server
-	if (sendto(sock, msgToSend, msgToSendLen, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) != msgToSendLen)
-		DieWithError("sendto() sent a different number of bytes than expected");
-
-	printf("Sent message to server...\n");
-	printf("Wainting for response from server ...\n");
-
-	// Receive a response
-	fromSize = sizeof(fromAddress);
-	if ((receivedMsgLen = recvfrom(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &fromAddress, &fromSize)) != msgToSendLen)
-		DieWithError("recvfrom() failed");
-
-	printf("Received response from server ...\n");
-
-	if (serverAddress.sin_addr.s_addr != fromAddress.sin_addr.s_addr) {
-		fprintf(stderr, "Error: received a packet from unknown source.\n");
-		exit(1);
+	// Try to open the file at file path 
+	FILE* in = fopen(filePath, "rb");
+	if (in == NULL) {
+		perror("Failed to open file");
+		return -1;
 	}
 
-	// null-terminate the received data
-	buffer[receivedMsgLen] = '\0';
-	printf("Received: %s\n", buffer);			// Print the recieved message
+	// Get the size of the file in bytes
+	fseek(in, 0L, SEEK_END);
+	unsigned long fileSize = ftell(in);
+	printf("File Size: %lu\n", fileSize);
+	rewind(in);
 
+	// Initialize bytesToSend
+	bytesToSend = sizeof(long);
+
+	// Send the file size to the server
+	do {
+		// Retransmit until the file size is sent correctly
+		printf("Sending file size...\n");
+		bytesSent = sendto(sock, &fileSize, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
+	} while (bytesSent != bytesToSend);
+	printf("Sent fileSize to server ...\n");
+
+	// Get fromSize
+	fromSize = sizeof(fromAddress);
+
+	// Set bytesToReceive
+	bytesToReceive = sizeof(char);
+
+	// Receive acknowledgement
+	if ((bytesReceived = recvfrom(sock, &ack, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) != bytesToReceive)
+		DieWithError("recvfrom() failed for fileSize ACK");
+	
+	printf("Received ACK for fileSize...\n");
+
+	// Set bytesToSend
+	bytesToSend = fileSize;
+	printf("Sending file to server ...\n");
+	// Send the file in chunks up to the buffer size
+	int count = 1;
+	while (bytesToSend > 0) {
+		if (bytesToSend > BUFFER_SIZE) {
+			fread(buffer, 1, BUFFER_SIZE, in);
+			// Retransmit until the data is sent correctly
+			do {
+				printf("Sending chunk %d...\n", count);
+				bytesSent = sendto(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
+			} while (bytesSent != BUFFER_SIZE);
+
+		} else {
+			fread(buffer, 1, bytesToSend, in);
+			do {
+				printf("Sending chunk %d...\n", count);
+				bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
+			} while (bytesSent != bytesToSend);
+		}
+		// Get fromSize
+		fromSize = sizeof(fromAddress);
+
+		// Set bytesToReceive
+		bytesToReceive = sizeof(char);
+
+		// Receive acknowledgement
+		if ((bytesReceived = recvfrom(sock, &ack, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) != bytesToReceive)
+			DieWithError("recvfrom() failed for fileSize ACK");
+		printf("Received ACK for Chunk %d ...\n", count);
+
+		// Decrement the bytesToSend
+		bytesToSend -= bytesSent;
+
+		// Increment the count
+		++count;
+	}
+
+	printf("Sent file to server...\n");
+
+	// Close the file
+	fclose(in);
+
+	printf("Waiting for response from server ...\n");
+
+	// TODO TODO TODO RECEIVE A RESPONSE FROM THE SERVER
+	// Get fromSize
+	fromSize = sizeof(fromAddress);
+
+	// Set bytesToReceive
+	bytesToReceive = sizeof(char);
+
+	// Receive acknowledgement
+	if ((bytesReceived = recvfrom(sock, &serverResponse, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) != bytesToReceive)
+		DieWithError("recvfrom() failed for server response");
+	printf("Received response from server...\n");
+
+	if (serverResponse = 1)
+		printf("Successful\n");
+	else
+		printf("Format error\n");
+
+	// Close the socket
 	close(sock);
 	exit(0);
 }
