@@ -28,6 +28,10 @@ int main(int argc, char* argv[]) {
 	unsigned char positiveAck = 1;
 	unsigned long bytesToSend;				// Number of bytes to send to the client
 	unsigned long bytesSent;				// Number of bytes sent
+	unsigned short optionsSize;	
+	unsigned char toFormat;
+	char* toName;
+	unsigned char toNameSize;	
 
 	if (argc != 2) {						// Test for correct number of parameters
 		fprintf(stderr, "Usage: %s <UDP SERVER PORT>\n", argv[0]);
@@ -55,29 +59,72 @@ int main(int argc, char* argv[]) {
 		// Set the size of the in-out parameter
 		clientAddrLen = sizeof(clientAddress);
 
-		printf("Waiting for fileSize from client ...\n");
-		
+		// Receive options size and send ACK
+		// ---------------------------------------------------------------------------------------
 		// Set bytesToReceive
-		bytesToReceive = sizeof(long);
+		bytesToReceive = sizeof(optionsSize);
 
 		// TODO: DO NOT SET A TIME OU ON THIS INITIAL RECEIVE FROM
-		// Receive fileSize
-		if ((bytesReceived = recvfrom(sock, &fileSize, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
+		// Receive optionsSize
+		if ((bytesReceived = recvfrom(sock, &optionsSize, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
 			DieWithError("recvform failed() for fileSize");
-		printf("Received fileSize from client...\n");
+		printf("Received optionsSize from client...\n");
 		
 		// Set bytesToSend
-		bytesToSend = sizeof(char);
-
-/*
-if ((bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-				DieWithError("sendto() sent a different number of bytes than expected");
-*/
+		bytesToSend = sizeof(positiveAck);
 
 		// Send positive acknowledgement
 		if ((bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != bytesToSend)
 			DieWithError("sendto() sent a different number of bytes than expected");
-		printf("Sent ACK for fileSize...\n");
+		printf("Sent ACK for optionsSize...\n");
+		// ---------------------------------------------------------------------------------------
+		
+		// Receive Options Packet from client and send ACK
+		// ---------------------------------------------------------------------------------------
+		// Set bytesToReceive
+		bytesToReceive = optionsSize;
+
+		// Receive options packet
+		if ((bytesReceived = recvfrom(sock, buffer, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
+			DieWithError("recvform failed() for fileSize");
+		printf("Received Size from client...\n");
+		
+		// Set bytesToSend
+		bytesToSend = sizeof(positiveAck);
+
+		// Send positive acknowledgement
+		if ((bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != bytesToSend)
+			DieWithError("sendto() sent a different number of bytes than expected");
+		printf("Sent ACK for options packet...\n");
+		// ---------------------------------------------------------------------------------------
+
+
+		// ---------------------------------------------------------------------------------------
+		// Parse the options
+		int optionsLen = 0;
+		memcpy(&toFormat, buffer + optionsLen, sizeof(toFormat));
+		optionsLen += sizeof(toFormat);
+		printf("To Format = %d\n", toFormat);
+		memcpy(&toNameSize, buffer + optionsLen, sizeof(toNameSize));
+		optionsLen += sizeof(toNameSize);
+		printf("To Name Size = %d\n", toNameSize);	
+		char temp[toNameSize];
+		memcpy(temp, buffer + optionsLen, toNameSize);
+		toName = temp;
+		optionsLen += toNameSize;
+		printf("To Name = %s\n", toName);
+		memcpy(&fileSize, buffer + optionsLen, sizeof(fileSize));
+		printf("File Size = %lu\n", fileSize);
+
+		// Check that options was correctly received
+		optionsLen += sizeof(fileSize);
+		if (optionsLen != optionsSize) {
+			printf("Options Len = %d\n", optionsLen);
+			printf("Options Size = %d\n", optionsSize);
+			printf("Options not correctly received\n");
+			exit(1);
+		}
+		// ---------------------------------------------------------------------------------------
 
 		// Create IN file to be passed to practice project then delete it 
 		FILE* tempIn = fopen(".tempFile", "wb");
