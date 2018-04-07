@@ -216,22 +216,28 @@ int main(int argc, char* argv[]) {
 	serverResponse = -1;
 
 	// Set the Timeout
-	alarm(TIMEOUT_SECS);
+	alarm(TIMEOUT_SECS * 5);
 
 	while (((bytesReceived = recvfrom(sock, &serverResponse, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (serverResponse != 0 && serverResponse != 1)) {
-		if (errno == EINTR)	{			// Alarm went off
-			if (tries < MAX_TRIES) {	// Incremented by signal handler
-				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
-				// Restart the timer
-				alarm(TIMEOUT_SECS);
-			} else
-				DieWithError("No Response");
-		} else
+		if (errno == EINTR)			// Alarm went off
+				printf("Request Timed Out...\nClient Terminating ...\n\n");
+		 else
 			DieWithError("recvfrom() failed");
 	}
 	// recvfrom() got something -- cancel the timeout
 	alarm(0);
 	printf("Received Response from server...\n");
+
+	// Process the Response
+	if (serverResponse == 0)
+		printf("Successful\n");
+	else if (serverResponse == 1)
+		printf("Format error\n");
+	else
+		printf("Server Response = %d\n", serverResponse);
+
+	// Close the socket
+	close(sock);
 
 	return 0;
 

@@ -133,7 +133,7 @@ if ((bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serve
 		printf("Handling data received from: %s\n", inet_ntoa(clientAddress.sin_addr));
 
 		// TODO TODO TODO PROCESS THE DATA RECEIVED
-		writeStatus = 1;		//TODO: STOP Hardcoding
+		writeStatus = 0;		//TODO: STOP Hardcoding
 
 		printf("Sending response to client...\n");
 
