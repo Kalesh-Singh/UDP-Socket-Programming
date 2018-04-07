@@ -68,11 +68,9 @@ int main(int argc, char* argv[]) {
 	bytesToSend = sizeof(long);
 
 	// Send the file size to the server
-	do {
-		// Retransmit until the file size is sent correctly
-		printf("Sending file size...\n");
-		bytesSent = sendto(sock, &fileSize, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
-	} while (bytesSent != bytesToSend);
+	printf("Sending file size...\n");
+	if((bytesSent = sendto(sock, &fileSize, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
+		DieWithError("sendto() sent a different number of bytes than expected");
 	printf("Sent fileSize to server ...\n");
 
 	// Get fromSize
@@ -81,6 +79,7 @@ int main(int argc, char* argv[]) {
 	// Set bytesToReceive
 	bytesToReceive = sizeof(char);
 
+	// TODO: Change this to use a timer and a MAX TRIES of 5 before giving up
 	// Receive acknowledgement
 	if ((bytesReceived = recvfrom(sock, &ack, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) != bytesToReceive)
 		DieWithError("recvfrom() failed for fileSize ACK");
@@ -95,18 +94,14 @@ int main(int argc, char* argv[]) {
 	while (bytesToSend > 0) {
 		if (bytesToSend > BUFFER_SIZE) {
 			fread(buffer, 1, BUFFER_SIZE, in);
-			// Retransmit until the data is sent correctly
-			do {
-				printf("Sending chunk %d...\n", count);
-				bytesSent = sendto(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
-			} while (bytesSent != BUFFER_SIZE);
-
+			printf("Sending chunk %d...\n", count);
+			if ((bytesSent = sendto(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != BUFFER_SIZE)
+				DieWithError("sendto() sent a different number of bytes than expected");
 		} else {
 			fread(buffer, 1, bytesToSend, in);
-			do {
-				printf("Sending chunk %d...\n", count);
-				bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress));
-			} while (bytesSent != bytesToSend);
+			printf("Sending chunk %d...\n", count);
+			if ((bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
+				DieWithError("sendto() sent a different number of bytes than expected");
 		}
 		// Get fromSize
 		fromSize = sizeof(fromAddress);
@@ -114,6 +109,7 @@ int main(int argc, char* argv[]) {
 		// Set bytesToReceive
 		bytesToReceive = sizeof(char);
 
+		// TODO: Change this to use a timer and a MAX TRIES of 5 before giving up
 		// Receive acknowledgement
 		if ((bytesReceived = recvfrom(sock, &ack, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) != bytesToReceive)
 			DieWithError("recvfrom() failed for fileSize ACK");

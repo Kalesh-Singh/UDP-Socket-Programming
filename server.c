@@ -5,7 +5,7 @@
 #include <string.h> 				// for memset()
 #include <unistd.h>					// for close()
 
-#define BUFFER_SIZE 200				// Buffer size
+#define BUFFER_SIZE 1000			// Buffer size
 
 void DieWithError(char* errorMessage) {		
 	// Error handling function
@@ -60,6 +60,7 @@ int main(int argc, char* argv[]) {
 		// Set bytesToReceive
 		bytesToReceive = sizeof(long);
 
+		// TODO: DO NOT SET A TIME OU ON THIS INITIAL RECEIVE FROM
 		// Receive fileSize
 		if ((bytesReceived = recvfrom(sock, &fileSize, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
 			DieWithError("recvform failed() for fileSize");
@@ -68,10 +69,14 @@ int main(int argc, char* argv[]) {
 		// Set bytesToSend
 		bytesToSend = sizeof(char);
 
+/*
+if ((bytesSent = sendto(sock, buffer, bytesToSend, 0, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
+				DieWithError("sendto() sent a different number of bytes than expected");
+*/
+
 		// Send positive acknowledgement
-		do {
-			bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress));
-		} while (bytesSent != bytesToSend);
+		if ((bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != bytesToSend)
+			DieWithError("sendto() sent a different number of bytes than expected");
 		printf("Sent ACK for fileSize...\n");
 
 		// Create IN file to be passed to practice project then delete it 
@@ -90,11 +95,17 @@ int main(int argc, char* argv[]) {
 		// Receive the file from the 
 		while (bytesToReceive > 0) {
 			if (bytesToReceive > BUFFER_SIZE) {
-				if((bytesReceived = recvfrom(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != BUFFER_SIZE)
+				if((bytesReceived = recvfrom(sock, buffer, BUFFER_SIZE, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != BUFFER_SIZE) {
+					printf("Bytes Received = %lu\n", bytesReceived);
+					printf("Bytes To Receive = %lu\n", bytesToReceive);
 					DieWithError("recvfrom() failed");
+				}
 			} else {
-				if((bytesReceived = recvfrom(sock, buffer, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
+				if((bytesReceived = recvfrom(sock, buffer, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive) {
+					printf("Bytes Received = %lu\n", bytesReceived);
+					printf("Bytes To Receive = %lu\n", bytesToReceive);
 					DieWithError("recvfrom() failed");
+				}
 			}
 			fwrite(buffer, bytesReceived, 1, tempIn);
 			printf("Received Chunk %d...\n", count);
@@ -103,9 +114,8 @@ int main(int argc, char* argv[]) {
 			bytesToSend = sizeof(char);
 
 			// Send positive acknowledgement
-			do {
-				bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress));
-			} while (bytesSent != bytesToSend);
+			if ((bytesSent = sendto(sock, &positiveAck, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != bytesToSend)
+				DieWithError("sendto() sent a different number of bytes than expected");
 			printf("Sent ACK for Chunk %d ...\n", count);
 
 			// Decrement bytesToReceive
@@ -127,23 +137,27 @@ int main(int argc, char* argv[]) {
 
 		printf("Sending response to client...\n");
 
+		// TODO TODO : Send Respose for some time no ACK will be sent by client
+/*
+		e.g. while (alarm()) {
+			sendServerResponse()
+
+		// TODO: NOTE: SERVER RESPONSE MUST BE 0 OR 1 
+		// WILL HAVE TO CHANGE THE RETURN VALUES OF writeUnitsFunction
+		}
+*/
+
 		// Set the bytesToSend
 		bytesToSend = sizeof(char);
 
-		do {
-			bytesSent = sendto(sock, &writeStatus, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress));
-		} while (bytesSent != bytesToSend);
-
+		if ((bytesSent = sendto(sock, &writeStatus, bytesToSend, 0, (struct sockaddr *) &clientAddress, sizeof(clientAddress))) != bytesToSend)
+			DieWithError("sendto() sent a different number of bytes than expected");
 		printf("Sent response to client...\n");
 
 		// Set bytesToReceive
 		bytesToReceive = sizeof(char);
 
-		// Receive acknowledgement
-		
-		if ((bytesReceived = recvfrom(sock, &ack, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
-			DieWithError("recvfrom() failed for acknowledgement");
-		printf("Received ACK for serverResponse from client...\n");
+
 	}
 
 	// NOT REACHED
