@@ -7,35 +7,35 @@
 #include <errno.h>					// for errno, EINTR
 #include <signal.h> 				// for sigaction()
 #include "rdt-client-helper.h"		// Helper functions for client
-#include "sendlib.h"				// for lossy_sendto()
 
+/*
 #define BUFFER_SIZE 1000			// Buffer size
 #define TIMEOUT_SECS 2				// Timeout seconds
 #define MAX_TRIES 5					// Max tries before terminating (Peer inactive)
-						
+*/						
 
 int main(int argc, char* argv[]) {
-	int sock;							// Socket descriptor
-	struct sockaddr_in serverAddress;	// Server address
-	struct sockaddr_in fromAddress;		// Source address of the received message
+	// int sock;						// Socket descriptor
+	// struct sockaddr_in serverAddress;	// Server address
+	// struct sockaddr_in fromAddress;		// Source address of the received message
 	unsigned short serverPort;			// Server port
-	unsigned int fromSize;				// In-out of address size for recvfrom()
+	// unsigned int fromSize;				// In-out of address size for recvfrom()
 	struct sigaction myAction;			// For setting signal handler
 	char* serverIP;						// IP address of server
 	char* filePath;						// Name (or path of file to send)
 	unsigned char toFormat;
 	char* toName;
 	unsigned char toNameSize;	
-	float lossProbability;
-	int randomSeed;
+	// float lossProbability;
+	// int randomSeed;
 	char buffer[BUFFER_SIZE];			// Buffer for receiving messages
-	unsigned long bytesToSend;			// Number of bytes to send to the server
-	unsigned long bytesSent;			// Number of bytes sent
-	unsigned char receivedACK;
+	// unsigned long bytesToSend;			// Number of bytes to send to the server
+	// unsigned long bytesSent;			// Number of bytes sent
+	// unsigned char receivedACK;
 	unsigned char toSendACK;
 	char serverResponse;				// Server response (Success or Format error)
-	unsigned long bytesToReceive;		// Number of bytes to receive from server
-	unsigned long bytesReceived;		// Number of bytes received
+	// unsigned long bytesToReceive;		// Number of bytes to receive from server
+	// unsigned long bytesReceived;		// Number of bytes received
 	unsigned long fileSize;
 	unsigned short optionsSize;	
 
@@ -88,58 +88,9 @@ int main(int argc, char* argv[]) {
 	printf("Options Size = %d\n", optionsSize);
 
 	// Send options size to server and Wait for server to send ACK for options size
-	// ------------------------------------------------------------------------------------
-
-	printf("Sending options size to server...\n");
-
-	// Set bytesToSend
-	bytesToSend = sizeof(optionsSize);
-
-	// Send the data 
-	if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, &optionsSize, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-		DieWithError("lossy_sendto() sent a different number of bytes than expected");
-	printf("Sent file size...\n");
-
-	// Get a response (ACK)
-	
-	// Get fromSize
-	fromSize = sizeof(fromAddress);
-
-	// Reset received ACK to 0
-	receivedACK = 0;
-
-	// Set bytesToReceive
-	bytesToReceive = sizeof(receivedACK);
-
-	// Reset tries
-	tries = 0;
-
-	// Set the Timeout
-	alarm(TIMEOUT_SECS);
-	
-	while (((bytesReceived = recvfrom(sock, &receivedACK, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (receivedACK != 1)) {
-		if (errno == EINTR)	{			// Alarm went off
-			if (tries < MAX_TRIES) {	// Incremented by signal handler
-				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
-				
-				// Resend the data
-				if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, &optionsSize, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-					DieWithError("lossy_sendto() sent a different number of bytes than expected");
-
-				// Restart the timer
-				alarm(TIMEOUT_SECS);
-			} else
-				DieWithError("No Response");
-		} else
-			DieWithError("recvfrom() failed");
-	}
-
-	// recvfrom() got something -- cancel the timeout
-	alarm(0);
-	printf("Received optionsSize ACK...\n");
-
-
-	// ------------------------------------------------------------------------------------
+	printf("Sending Options Size to Server...\n");
+	send_wait(&optionsSize, sizeof(optionsSize));
+	printf("Received ACK for Options Size...\n");
 
 	// Create the options packet
 	int optionsLen = 0;
@@ -151,133 +102,38 @@ int main(int argc, char* argv[]) {
 	optionsLen += toNameSize;
 	printf("FIleSize = %lu\n", fileSize);
 	memcpy(buffer + optionsLen, &fileSize, sizeof(fileSize));			// Place fileSize in the optionsBuffer
-	
-	// ------------------------------------------------------------------------------------
 
 	// Send options packet and wait for ACK
-
-	// ------------------------------------------------------------------------------------
-
-	printf("Sending options packet to server...\n");
-
-	// Set bytesToSend
-	bytesToSend = optionsSize;
-
-	// Send the data 
-	if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-		DieWithError("lossy_sendto() sent a different number of bytes than expected");
-	printf("Sent file size...\n");
-
-	// Get a response (ACK)
-	
-	// Get fromSize
-	fromSize = sizeof(fromAddress);
-
-	// Reset received ACK to 0
-	receivedACK = 0;
-
-	// Set bytesToReceive
-	bytesToReceive = sizeof(receivedACK);
-
-	// Reset tries
-	tries = 0;
-
-	// Set the Timeout
-	alarm(TIMEOUT_SECS);
-	
-	while (((bytesReceived = recvfrom(sock, &receivedACK, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (receivedACK != 1)) {
-		if (errno == EINTR)	{			// Alarm went off
-			if (tries < MAX_TRIES) {	// Incremented by signal handler
-				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
-				
-				// Resend the data
-				if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-					DieWithError("lossy_sendto() sent a different number of bytes than expected");
-
-				// Restart the timer
-				alarm(TIMEOUT_SECS);
-			} else
-				DieWithError("No Response");
-		} else
-			DieWithError("recvfrom() failed");
-	}
-
-	// recvfrom() got something -- cancel the timeout
-	alarm(0);
-	printf("Received options packet ACK...\n");
+	printf("Sending Options Packet to Server...\n");
+	send_wait(buffer, optionsSize);
+	printf("Received ACK for Options Packet...\n");
 
 	// Send the file to server
 	printf("Sending FILE to server ...\n");
-
-	// Set bytesToSend
-	bytesToSend = fileSize;
-
-	// Send the file in chucks, which can be as large as the buffer size
+	unsigned long bytesRemaining = fileSize;
 	int count = 1;
-	while (bytesToSend > 0) {
-		// Read data into buffer and send the data
-		if (bytesToSend > BUFFER_SIZE) {
+	
+	while (bytesRemaining > 0) {
+
+		if (bytesRemaining > BUFFER_SIZE) {
 			fread(buffer, 1, BUFFER_SIZE, in);
-			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, BUFFER_SIZE, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != BUFFER_SIZE)
-				DieWithError("lossy_sendto() sent a different number of bytes than expected");
-			printf("Sent file chunk %d...\n", count);
+			printf("Sending file chunk %d...\n", count);
+			send_wait(buffer, BUFFER_SIZE);
+			printf("Received ACK file chunk %d...\n", count);
 		} else {
-			fread(buffer, 1, bytesToSend, in);
-			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-				DieWithError("lossy_sendto() sent a different number of bytes than expected");
-			printf("Sent file chunk %d...\n", count);
+			fread(buffer, 1, bytesRemaining, in);
+			printf("Sending file chunk %d...\n", count);
+			send_wait(buffer, bytesRemaining);
+			printf("Received ACK file chunk %d...\n", count);
 		}
-		// Get fromSize
-		fromSize = sizeof(fromAddress);
-
-		// Reset received ACK to 0
-		receivedACK = 0;
-
-		// Set bytesToReceive
-		bytesToReceive = sizeof(receivedACK);
-
-		// Reset tries
-		tries = 0;
-
-		// Set the Timeout
-		alarm(TIMEOUT_SECS);
-
-		while (((bytesReceived = recvfrom(sock, &receivedACK, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (receivedACK != 1)) {
-			if (errno == EINTR)	{			// Alarm went off
-				if (tries < MAX_TRIES) {	// Incremented by signal handler
-					printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
-				
-					// Resend the data
-					if (bytesToSend > BUFFER_SIZE) {
-						if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, BUFFER_SIZE, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != BUFFER_SIZE)
-							DieWithError("lossy_sendto() sent a different number of bytes than expected");
-						printf("Sent file chunk %d...\n", count);
-					} else {
-						if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
-							DieWithError("lossy_sendto() sent a different number of bytes than expected");
-						printf("Sent file chunk %d...\n", count);
-					}
-
-					// Restart the timer
-					alarm(TIMEOUT_SECS);
-				} else
-					DieWithError("No Response");
-			} else
-				DieWithError("recvfrom() failed");
-		}
-
-		// recvfrom() got something -- cancel the timeout
-		alarm(0);
-		printf("Received fileSize ACK...\n");
-
-		// Decrement the bytesToSend
-		bytesToSend -= bytesSent;
+		
+		// Decrement the bytesRemaining
+		bytesRemaining -= bytesSent;
 
 		// Increment the count
 		++count;
 	}
-
-	printf("Sent file to server...\n");
+	printf("Sent FILE to server...\n");
 
 	printf("Waiting for response from server ...\n");
 
@@ -293,6 +149,7 @@ int main(int argc, char* argv[]) {
 	// Set the Timeout
 	alarm(TIMEOUT_SECS * 5);
 
+	// Try to Recive Server Response
 	while (((bytesReceived = recvfrom(sock, &serverResponse, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (serverResponse != 0 && serverResponse != 1)) {
 		if (errno == EINTR)			// Alarm went off
 				printf("Request Timed Out...\nClient Terminating ...\n\n");

@@ -85,8 +85,10 @@ int main(int argc, char* argv[]) {
 		bytesToReceive = optionsSize;
 
 		// Receive options packet
-		if ((bytesReceived = recvfrom(sock, buffer, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive)
+		if ((bytesReceived = recvfrom(sock, buffer, bytesToReceive, 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != bytesToReceive) {
+			printf("OptionSize = %d\n", optionsSize);
 			DieWithError("recvform failed() for fileSize");
+		}
 		printf("Received Size from client...\n");
 		
 		// Set bytesToSend
