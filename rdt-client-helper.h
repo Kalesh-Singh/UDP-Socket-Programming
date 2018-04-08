@@ -11,19 +11,11 @@
 #define MAX_TRIES 5					// Max tries before terminating (Peer inactive)
 
 extern int tries;
-extern float lossProbability;
-extern int randomSeed;
-extern int sock;							// Socket Descriptor
-extern struct sockaddr_in serverAddress;	// Server address
-extern struct sockaddr_in fromAddress;		// Source address of the received message
-extern long bytesToReceive;		// Number of bytes to receive from server
 extern long bytesReceived;					// Number of bytes received
-extern unsigned int fromSize;				// In-out of address size for recvfrom()
-extern long bytesToSend;			// Number of bytes to send to the server
 extern long bytesSent;						// Number of bytes sent
 
 void DieWithError(char* errorMessage);
 void ParseCommandLineArguments(int argc, char* argv[], char** serverIP, unsigned short* serverPort, char** filePath, unsigned char* toFormat, char** toName, unsigned char* toNameSize, float* lossProbability, int* randomSeed);
 void CatchAlarm(int ignored);			// Handler for SIGALARM
 
-void send_wait(const void* sendBuffer, unsigned long sendBufLen, void *restrict recvBuffer, unsigned long recvBufLen);
+void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, const void* sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);

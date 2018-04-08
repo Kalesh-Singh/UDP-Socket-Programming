@@ -15,27 +15,22 @@
 */						
 
 int main(int argc, char* argv[]) {
-	// int sock;						// Socket descriptor
-	// struct sockaddr_in serverAddress;	// Server address
-	// struct sockaddr_in fromAddress;		// Source address of the received message
+	int sock;						// Socket descriptor
+	struct sockaddr_in serverAddress;	// Server address
+	struct sockaddr_in fromAddress;		// Source address of the received message
 	unsigned short serverPort;			// Server port
-	// unsigned int fromSize;				// In-out of address size for recvfrom()
+	unsigned int fromSize;				// In-out of address size for recvfrom()
 	struct sigaction myAction;			// For setting signal handler
 	char* serverIP;						// IP address of server
 	char* filePath;						// Name (or path of file to send)
 	unsigned char toFormat;
 	char* toName;
 	unsigned char toNameSize;	
-	// float lossProbability;
-	// int randomSeed;
+	float lossProbability;
+	int randomSeed;
 	char buffer[BUFFER_SIZE];			// Buffer for receiving messages
-	// unsigned long bytesToSend;			// Number of bytes to send to the server
-	// unsigned long bytesSent;			// Number of bytes sent
-	// unsigned char receivedACK;
 	unsigned char toSendACK;
 	char serverResponse;				// Server response (Success or Format error)
-	// unsigned long bytesToReceive;		// Number of bytes to receive from server
-	// unsigned long bytesReceived;		// Number of bytes received
 	unsigned long fileSize;
 	unsigned short optionsSize;	
 	unsigned char receivedACK;
@@ -90,7 +85,7 @@ int main(int argc, char* argv[]) {
 
 	// Send options size to server and Wait for server to send ACK for options size
 	printf("Sending Options Size to Server...\n");
-	send_wait(&optionsSize, sizeof(optionsSize), &receivedACK, sizeof(receivedACK));
+	send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), &optionsSize, sizeof(optionsSize), &receivedACK, sizeof(receivedACK));
 	printf("Received ACK for Options Size...\n");
 
 	// Create the options packet
@@ -106,7 +101,7 @@ int main(int argc, char* argv[]) {
 
 	// Send options packet and wait for ACK
 	printf("Sending Options Packet to Server...\n");
-	send_wait(buffer, optionsSize, &receivedACK, sizeof(receivedACK));
+	send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), buffer, optionsSize, &receivedACK, sizeof(receivedACK));
 	printf("Received ACK for Options Packet...\n");
 
 	// Send the file to server
@@ -119,12 +114,12 @@ int main(int argc, char* argv[]) {
 		if (bytesRemaining > BUFFER_SIZE) {
 			fread(buffer, 1, BUFFER_SIZE, in);
 			printf("Sending file chunk %d...\n", count);
-			send_wait(buffer, BUFFER_SIZE, &receivedACK, sizeof(receivedACK));
+			send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), buffer, BUFFER_SIZE, &receivedACK, sizeof(receivedACK));
 			printf("Received ACK file chunk %d...\n", count);
 		} else {
 			fread(buffer, 1, bytesRemaining, in);
 			printf("Sending file chunk %d...\n", count);
-			send_wait(buffer, bytesRemaining, &receivedACK, sizeof(receivedACK));
+			send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), buffer, bytesRemaining, &receivedACK, sizeof(receivedACK));
 			printf("Received ACK file chunk %d...\n", count);
 		}
 		
@@ -141,17 +136,11 @@ int main(int argc, char* argv[]) {
 	// Get fromSize
 	fromSize = sizeof(fromAddress);
 
-	// Set bytesToReceive
-	bytesToReceive = sizeof(serverResponse);
-
-	// Reset serverResponse
-	serverResponse = -1;
-
 	// Set the Timeout
 	alarm(TIMEOUT_SECS * 5);
 
-	// Try to Recive Server Response
-	while (((bytesReceived = recvfrom(sock, &serverResponse, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0)) {
+	// Try to Recive Server Response (Wait 10 seconds for response, then give up)
+	while (((bytesReceived = recvfrom(sock, &serverResponse, sizeof(serverResponse), 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0)) {
 		if (errno == EINTR)			// Alarm went off
 				printf("Request Timed Out...\nClient Terminating ...\n\n");
 		 else

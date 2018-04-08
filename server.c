@@ -47,8 +47,7 @@ int main(int argc, char* argv[]) {
 	// Cosntruct local address structure
 	memset(&serverAddress, 0, sizeof(serverAddress));		// Zero out structure 
 	serverAddress.sin_family = AF_INET;						// Internet address family
-	//serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);		// Any incoming interface 
-	serverAddress.sin_addr.s_addr = inet_addr("127.0.0.1");
+	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);		// Any incoming interface 
 	serverAddress.sin_port = htons(serverPort);				// Local port
 
 	// Bind to the local address
