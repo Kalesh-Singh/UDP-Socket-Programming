@@ -6,12 +6,11 @@ int randomSeed;
 int sock;							// Socket Descriptor
 struct sockaddr_in serverAddress;	// Server address
 struct sockaddr_in fromAddress;		// Source address of the received message
-unsigned char receivedACK;
-unsigned long bytesToReceive;		// Number of bytes to receive from server
-unsigned long bytesReceived;		// Number of bytes received
+long bytesToReceive;		// Number of bytes to receive from server
+long bytesReceived;		// Number of bytes received
 unsigned int fromSize;				// In-out of address size for recvfrom()
-unsigned long bytesToSend;			// Number of bytes to send to the server
-unsigned long bytesSent;			// Number of bytes sent
+long bytesToSend;			// Number of bytes to send to the server
+long bytesSent;			// Number of bytes sent
 
 void DieWithError(char* errorMessage) {
 	// Error handling function
@@ -73,24 +72,16 @@ void CatchAlarm(int ignored) {
 	tries += 1;
 }
 
-void send_wait(const void* buffer, unsigned long len) {
+void send_wait(const void* sendBuffer, unsigned long sendBufLen, void *restrict recvBuffer, unsigned long recvBufLen) {
 	// Set bytesToSend
-	bytesToSend = len;
+	bytesToSend = sendBufLen;
 
 	// Send the data 
-	if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
+	if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendBuffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
 		DieWithError("lossy_sendto() sent a different number of bytes than expected");
 
-	// Get a response (ACK)
-	
-	// Get fromSize
-	fromSize = sizeof(fromAddress);
-
-	// Reset received ACK to 0
-	receivedACK = 0;
-
 	// Set bytesToReceive
-	bytesToReceive = sizeof(receivedACK);
+	bytesToReceive = recvBufLen;
 
 	// Reset tries
 	tries = 0;
@@ -98,13 +89,13 @@ void send_wait(const void* buffer, unsigned long len) {
 	// Set the Timeout
 	alarm(TIMEOUT_SECS);
 	
-	while (((bytesReceived = recvfrom(sock, &receivedACK, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0) || (receivedACK != 1)) {
+	while (((bytesReceived = recvfrom(sock, recvBuffer, bytesToReceive, 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0)) {
 		if (errno == EINTR)	{			// Alarm went off
 			if (tries < MAX_TRIES) {	// Incremented by signal handler
 				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
 				
 				// Resend the data
-				if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, buffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
+				if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendBuffer, bytesToSend, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != bytesToSend)
 					DieWithError("lossy_sendto() sent a different number of bytes than expected");
 
 				// Restart the timer
