@@ -7,13 +7,7 @@
 #include <errno.h>					// for errno, EINTR
 #include <signal.h> 				// for sigaction()
 #include "rdt-client-helper.h"		// Helper functions for client
-
-/*
-#define BUFFER_SIZE 1000			// Buffer size
-#define TIMEOUT_SECS 2				// Timeout seconds
-#define MAX_TRIES 5					// Max tries before terminating (Peer inactive)
-*/						
-
+				
 int main(int argc, char* argv[]) {
 	int sock;						// Socket descriptor
 	struct sockaddr_in serverAddress;	// Server address
@@ -29,7 +23,7 @@ int main(int argc, char* argv[]) {
 	float lossProbability;
 	int randomSeed;
 	char buffer[BUFFER_SIZE];			// Buffer for receiving messages
-	unsigned char toSendACK;
+	unsigned char positiveACK;
 	char serverResponse;				// Server response (Success or Format error)
 	unsigned long fileSize;
 	unsigned short optionsSize;	
@@ -129,34 +123,16 @@ int main(int argc, char* argv[]) {
 		// Increment the count
 		++count;
 	}
-	printf("Sent FILE to server...\n");
-
-	printf("Waiting for response from server ...\n");
-
-	// Get fromSize
-	fromSize = sizeof(fromAddress);
-
-	// Set the Timeout
-	alarm(TIMEOUT_SECS * 5);
-
-	// Try to Recive Server Response (Wait 10 seconds for response, then give up)
-	while (((bytesReceived = recvfrom(sock, &serverResponse, sizeof(serverResponse), 0, (struct sockaddr *) &fromAddress, &fromSize)) < 0)) {
-		if (errno == EINTR)			// Alarm went off
-				printf("Request Timed Out...\nClient Terminating ...\n\n");
-		 else
-			DieWithError("recvfrom() failed");
-	}
-	// recvfrom() got something -- cancel the timeout
-	alarm(0);
-	printf("Received Respose from Server...\n");
+	printf("Sending FILE COMPLETE to server...\n");
+	send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), &positiveACK, sizeof(positiveACK), &serverResponse, sizeof(serverResponse));
+	printf("Received response from server ...\n");
 
 	// Process the Response
-	if (serverResponse == 0)
-		printf("Successful\n");
-	else if (serverResponse == 1)
+	if (serverResponse < 0)
 		printf("Format error\n");
+		
 	else
-		printf("Server Response = %d\n", serverResponse);
+		printf("Successful\n");
 
 	sleep(1);
 	// Close the socket

@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
 	unsigned long bytesToReceive;			// Number of bytes to receive from client
 	unsigned long bytesReceived;			// Number of bytes received
 	unsigned long fileSize;					// Size of file to receive
-	unsigned char writeStatus;				// Send the result of the operation back to the client
+	char writeStatus;				// Send the result of the operation back to the client
 	unsigned char ack;
 	unsigned char positiveAck = 1;
 	unsigned long bytesToSend;				// Number of bytes to send to the client

@@ -15,7 +15,7 @@ extern long bytesReceived;					// Number of bytes received
 extern long bytesSent;						// Number of bytes sent
 
 void DieWithError(char* errorMessage);
-void ParseCommandLineArguments(int argc, char* argv[], char** serverIP, unsigned short* serverPort, char** filePath, unsigned char* toFormat, char** toName, unsigned char* toNameSize, float* lossProbability, int* randomSeed);
+void ParseCommandLineArguments(int argc, char* argv[], unsigned short* serverPort, float* lossProbability, int* randomSeed);
 void CatchAlarm(int ignored);			// Handler for SIGALARM
 
 void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, const void* sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);
