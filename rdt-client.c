@@ -28,7 +28,6 @@ int main(int argc, char* argv[]) {
 	unsigned long fileSize;
 	unsigned short optionsSize;	
 	unsigned char receivedACK;
-	unsigned long seqNum = 0;
 
 	//Parse Command Line Arguments
 	ParseCommandLineArguments(argc, argv, &serverIP, &serverPort, &filePath, &toFormat, &toName, &toNameSize, &lossProbability, &randomSeed);
@@ -129,6 +128,24 @@ int main(int argc, char* argv[]) {
 	printf("Sending FILE COMPLETE to server...\n");
 	send_wait(sock, lossProbability, randomSeed, &serverAddress, sizeof(serverAddress), &fromAddress, sizeof(serverAddress), &positiveACK, sizeof(positiveACK), &serverResponse, sizeof(serverResponse));
 	printf("Received response from server ...\n");
+
+
+	printf("Sending Response ACK to server ...\n");
+	// Send Respose ACK repeatedly to ensure it is received; since no ACK will be sent by server
+	tries = 10;
+
+	// Increment the sequence number
+	seqNum = (seqNum + 1) % 2;
+
+	// Make the packet
+	unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, &positiveACK, sizeof(positiveACK));
+
+	while (tries > 0) {
+		if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendPacketBuffer, packetLen, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != packetLen)
+				DieWithError("lossy_sendto() sent a different number of bytes than expected");
+		--secondsLeft;		
+	}
+	printf("Sent Response ACK to server...\n");
 
 	// Process the Response
 	if (serverResponse < 0)

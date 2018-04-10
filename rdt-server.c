@@ -7,6 +7,7 @@
 #include <errno.h>					// for errno, EINTR
 #include <signal.h>					// for sigaction()
 #include "rdt-server-helper.h"		// Helper functions for server
+#include "unitslib.h"				// for writeUnits()
 
 
 int main(int argc, char* argv[]) {
@@ -35,11 +36,6 @@ int main(int argc, char* argv[]) {
 	printf("Loss Probability = %0.2f\n", lossProbability);
 	printf("Random Seed = %d\n", randomSeed);
 
-
-	// Create socket for sending/receiving datagrams
-	if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
-		DieWithError("socket() failed");
-
 	// Set the signal handler for alarm signal
 	myAction.sa_handler = CatchAlarm;
 
@@ -50,34 +46,33 @@ int main(int argc, char* argv[]) {
 	if (sigaction(SIGALRM, &myAction, 0) < 0)
 		DieWithError("sigaction() failed for SIGALRM");
 
-	// Cosntruct local address structure
-	memset(&serverAddress, 0, sizeof(serverAddress));		// Zero out structure 
-	serverAddress.sin_family = AF_INET;						// Internet address family
-	serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);		// Any incoming interface 
-	serverAddress.sin_port = htons(serverPort);				// Local port
-
-	// Bind to the local address
-	if (bind(sock, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-		DieWithError("bind() failed");
-
 	while (1) { 		// Run forever
+		// Create socket for sending/receiving datagrams
+		if ((sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0)
+			DieWithError("socket() failed");
+
+		// Cosntruct local address structure
+		memset(&serverAddress, 0, sizeof(serverAddress));		// Zero out structure 
+		serverAddress.sin_family = AF_INET;						// Internet address family
+		serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);		// Any incoming interface 
+		serverAddress.sin_port = htons(serverPort);				// Local port
+
+		// Bind to the local address
+		if (bind(sock, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
+			DieWithError("bind() failed");
+
 		// Set the size of the in-out parameter
 		clientAddrLen = sizeof(clientAddress);
 
-		// Receive options size and send ACK
-		// NOTE: DO NOT SET A TIME OUT ON THIS FIRST recvfrom()
+		// Receive options size and send ACK; NOTE: Don't set a timoeout of this 1st recvfrom()
 		// Receive optionsSize
-		printf("Waiting for data from a client...\n");
-/*
-		if ((bytesReceived = recvfrom(sock, &optionsSize, sizeof(optionsSize), 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != sizeof(optionsSize))
+		printf("\n\nWaiting for data from a client...\n");
 
-*/
+
 		if ((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + sizeof(optionsSize), 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != sizeof(char) + sizeof(optionsSize))	
 			DieWithError("recvform failed() for optionsSize");
 		printf("Received optionsSize from client...\n");
 		extractPacket(recvPacketBuffer, &seqNum, &optionsSize, sizeof(optionsSize));
-
-		// seqNum = (seqNum + 1) % 2;
 
 		// Send Positive ACK and wait for Options Packet from server
 		printf("Sending ACK for optionsSize...\n");
@@ -126,7 +121,7 @@ int main(int argc, char* argv[]) {
 		// Receive the file from the 
 		while (remainingBytes > 0) {
 			if (remainingBytes > BUFFER_SIZE) {
-				if (count == 1) 
+				if (count == 0) 
 					printf("Sending ACK for Options Packet ...\n");
 				else 
 					printf("Sending ACK File Chunk  %d...\n", count);
@@ -134,7 +129,7 @@ int main(int argc, char* argv[]) {
 				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, BUFFER_SIZE);
 				printf("Received File Chunk %d from client ...\n", ++count);
 			} else {
-				if (count == 1) 
+				if (count == 0) 
 					printf("Sending ACK for Options Packet ...\n");
 				else 
 					printf("Sending ACK File Chunk  %d...\n", count);
@@ -152,8 +147,6 @@ int main(int argc, char* argv[]) {
 		// Close the file
 		fclose(tempIn);
 
-		writeStatus = 0;
-
 		// Send ACK for last file chunk and wait for ACK
 		printf("Sending ACK File Chunk  %d...\n", count);
 		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), &receivedACK, sizeof(receivedACK));
@@ -164,23 +157,56 @@ int main(int argc, char* argv[]) {
 		printf("Handling data received from: %s\n", inet_ntoa(clientAddress.sin_addr));
 
 		// TODO TODO TODO PROCESS THE DATA RECEIVED
-		writeStatus = 0;		//TODO: STOP Hardcoding
+		// writeStatus = 0;		//TODO: STOP Hardcoding
 
-		
 
-		// Send Respose for some time no ACK will be sent by client
-		int secondsLeft = 10;
-		printf("Sending response to client...\n");
+		// -----------------------------------------------------------------------------
 
-		// Make the packet
-		unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, &writeStatus, sizeof(writeStatus));
-
-		while (secondsLeft > 0) {
-			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendPacketBuffer, packetLen, (struct sockaddr *) &clientAddress, clientAddrLen)) != packetLen)
-					DieWithError("lossy_sendto() sent a different number of bytes than expected");
-			--secondsLeft;		
+		tempIn = fopen(".tempFile", "rb");
+		if (tempIn == NULL) {
+			perror("Failed to open IN file");
+			return -1;
 		}
-		printf("Sent Response to Client...\n");
+		
+		FILE* out = fopen(toName, "wb+");		// "wb+" because we also need to read to display the written data
+		if (out == NULL) {
+			perror("Failed to open OUT file");
+			return -1;
+		}
+
+		// Get Write status
+		writeStatus = writeUnits(tempIn, out, toFormat);
+		printf("\nWrote units to %s file ... \n", toName);
+
+		// Close the IN file
+		fclose(tempIn);
+		
+		// Close the OUT file
+		fclose(out);
+		
+		// Delete the .temp file		
+		if (remove(".tempFile") == 0)
+			printf("Successfully deleted .temp file\n");
+		else
+			printf("Failed to delete .temp file\n");
+
+		if (writeStatus < 0) {
+			// Delete the partially written file		
+			if (remove(toName) == 0)
+				printf("Successfully deleted %s file that was partially written.\n", toName);
+			else
+				printf("Failed to delete created file\n");
+		} else
+			printf("File successfully written on server.\n");	
+		// -----------------------------------------------------------------------------
+
+
+		printf("Sending Server Response to client...\n");
+		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &writeStatus, sizeof(writeStatus), &receivedACK, sizeof(receivedACK));
+		printf("Received Response ACK from client...\n");
+
+		// close the socket to discard duplicataed ACKs
+		close(sock);
 
 	}
 

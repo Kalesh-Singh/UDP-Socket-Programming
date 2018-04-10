@@ -57,7 +57,7 @@ void send_wait(int sock, float lossProbability, int randomSeed, const struct soc
 	
 	while (((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + bytesToReceive, 0, (struct sockaddr *) fromAddr, &fromAddrLen)) < 0) || (recvPacketBuffer[0] != seqNum)) {
 		printf("Expected Sequence Number = %d\n", seqNum);
-		printf("Receiveq Sequnece Number = %d\n", recvPacketBuffer[0]);
+		printf("Received Sequnece Number = %d\n", recvPacketBuffer[0]);
 		if (errno == EINTR)	{			// Alarm went off
 			if (tries < MAX_TRIES) {	// Incremented by signal handler
 				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
