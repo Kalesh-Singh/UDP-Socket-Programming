@@ -69,12 +69,10 @@ void CatchAlarm(int ignored) {
 
 void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive) {
 
-	// TODO: Test This
-	printf("CLIENT SEQ NUM = %d\n", seqNum);
+	// Icrement the sequence number
 	seqNum = (seqNum + 1) % 2;
-	printf("CLIENT SEQ NUM = %d\n", seqNum);
 
-	//TODO: TEST THIS
+	// Make the packet to send
 	unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, sendBuffer, bytesToSend);
 
 	// Send the data 
@@ -87,12 +85,12 @@ void send_wait(int sock, float lossProbability, int randomSeed, const struct soc
 	// Set the Timeout
 	alarm(TIMEOUT_SECS);
 
-	// TODO: Reset the sequnece Num in recvPacketBUffer to -1
+	// Invalidate the recv packet buffer
 	memset (recvPacketBuffer, -1, BUFFER_SIZE + 1);
 	
-	while (((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + bytesToReceive, 0, (struct sockaddr *) fromAddr, &fromAddrLen)) < 0) || (recvPacketBuffer[0] != seqNum)) { // TODO: Note the additional condition
+	while (((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + bytesToReceive, 0, (struct sockaddr *) fromAddr, &fromAddrLen)) < 0) || (recvPacketBuffer[0] != seqNum)) {
 		printf("Expected Sequence Number = %d\n", seqNum);
-		printf("recvPacket[0] = %d\n", recvPacketBuffer[0]);
+		printf("Received Sequence Number = %d\n", recvPacketBuffer[0]);
 		if (errno == EINTR)	{			// Alarm went off
 			if (tries < MAX_TRIES) {	// Incremented by signal handler
 				printf("recvfrom() timed out, %d more tries ...\n", MAX_TRIES - tries);
@@ -112,7 +110,7 @@ void send_wait(int sock, float lossProbability, int randomSeed, const struct soc
 	// recvfrom() got something -- cancel the timeout
 	alarm(0);
 
-	// TODO: Test this 
+	// Extract the received packet 
 	char temp;
 	extractPacket(recvPacketBuffer, &temp, recvBuffer, bytesToReceive);
 }

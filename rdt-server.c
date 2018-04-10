@@ -17,14 +17,10 @@ int main(int argc, char* argv[]) {
 	struct sigaction myAction;			// For setting signal handler
 	char buffer[BUFFER_SIZE];				// Buffer to send data
 	unsigned short serverPort;				// Server port
-	// unsigned long bytesToReceive;			// Number of bytes to receive from client
-	// unsigned long bytesReceived;			// Number of bytes received
 	unsigned long fileSize;					// Size of file to receive
 	char writeStatus;				// Send the result of the operation back to the client
 	unsigned char receivedACK;
 	unsigned char positiveACK = 1;
-	// unsigned long bytesToSend;				// Number of bytes to send to the client
-	// unsigned long bytesSent;				// Number of bytes sent
 	unsigned short optionsSize;	
 	unsigned char toFormat;
 	char* toName;
@@ -126,7 +122,7 @@ int main(int argc, char* argv[]) {
 		// Set bytesToReceive
 		remainingBytes = fileSize;
 
-		int count = 1;
+		int count = 0;
 		// Receive the file from the 
 		while (remainingBytes > 0) {
 			if (remainingBytes > BUFFER_SIZE) {
@@ -158,7 +154,7 @@ int main(int argc, char* argv[]) {
 
 		writeStatus = 0;
 
-		// TODO: Send ACK for last file chunk and wait for ACK
+		// Send ACK for last file chunk and wait for ACK
 		printf("Sending ACK File Chunk  %d...\n", count);
 		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), &receivedACK, sizeof(receivedACK));
 		printf("Received FILE COMPLETE from client ...\n");
@@ -176,14 +172,10 @@ int main(int argc, char* argv[]) {
 		int secondsLeft = 10;
 		printf("Sending response to client...\n");
 
-		// TODO: Make the packet
+		// Make the packet
 		unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, &writeStatus, sizeof(writeStatus));
 
 		while (secondsLeft > 0) {
-/*
-			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, &writeStatus, sizeof(writeStatus), (struct sockaddr *) &clientAddress, clientAddrLen)) != sizeof(writeStatus))
-					DieWithError("lossy_sendto() sent a different number of bytes than expected");
-*/
 			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendPacketBuffer, packetLen, (struct sockaddr *) &clientAddress, clientAddrLen)) != packetLen)
 					DieWithError("lossy_sendto() sent a different number of bytes than expected");
 			--secondsLeft;		
@@ -191,7 +183,6 @@ int main(int argc, char* argv[]) {
 		printf("Sent Response to Client...\n");
 
 	}
-
 
 	// NOT REACHED
 	return 0;
