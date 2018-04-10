@@ -72,9 +72,16 @@ int main(int argc, char* argv[]) {
 		// NOTE: DO NOT SET A TIME OUT ON THIS FIRST recvfrom()
 		// Receive optionsSize
 		printf("Waiting for data from a client...\n");
+/*
 		if ((bytesReceived = recvfrom(sock, &optionsSize, sizeof(optionsSize), 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != sizeof(optionsSize))
+
+*/
+		if ((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + sizeof(optionsSize), 0, (struct sockaddr *) &clientAddress, &clientAddrLen)) != sizeof(char) + sizeof(optionsSize))	
 			DieWithError("recvform failed() for optionsSize");
 		printf("Received optionsSize from client...\n");
+		extractPacket(recvPacketBuffer, &seqNum, &optionsSize, sizeof(optionsSize));
+
+		// seqNum = (seqNum + 1) % 2;
 
 		// Send Positive ACK and wait for Options Packet from server
 		printf("Sending ACK for optionsSize...\n");
@@ -142,7 +149,8 @@ int main(int argc, char* argv[]) {
 			fwrite(buffer, bytesReceived, 1, tempIn);
 	
 			// Decrement bytesToReceive
-			remainingBytes -= bytesReceived;
+			remainingBytes += sizeof(char);
+			remainingBytes -= bytesReceived; 
 		}
 		
 		// Close the file
@@ -167,8 +175,16 @@ int main(int argc, char* argv[]) {
 		// Send Respose for some time no ACK will be sent by client
 		int secondsLeft = 10;
 		printf("Sending response to client...\n");
+
+		// TODO: Make the packet
+		unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, &writeStatus, sizeof(writeStatus));
+
 		while (secondsLeft > 0) {
+/*
 			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, &writeStatus, sizeof(writeStatus), (struct sockaddr *) &clientAddress, clientAddrLen)) != sizeof(writeStatus))
+					DieWithError("lossy_sendto() sent a different number of bytes than expected");
+*/
+			if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendPacketBuffer, packetLen, (struct sockaddr *) &clientAddress, clientAddrLen)) != packetLen)
 					DieWithError("lossy_sendto() sent a different number of bytes than expected");
 			--secondsLeft;		
 		}

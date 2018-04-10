@@ -13,9 +13,15 @@
 extern int tries;
 extern long bytesReceived;					// Number of bytes received
 extern long bytesSent;						// Number of bytes sent
+extern char sendPacketBuffer[BUFFER_SIZE + 1];
+extern char recvPacketBuffer[BUFFER_SIZE + 1];
+extern unsigned char seqNum;
 
 void DieWithError(char* errorMessage);
 void ParseCommandLineArguments(int argc, char* argv[], char** serverIP, unsigned short* serverPort, char** filePath, unsigned char* toFormat, char** toName, unsigned char* toNameSize, float* lossProbability, int* randomSeed);
 void CatchAlarm(int ignored);			// Handler for SIGALARM
 
-void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, const void* sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);
+void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);
+
+unsigned long makePacket(char* packetBuffer, char* seqNum, void* restrict dataBuffer, unsigned long dataBytes);
+void extractPacket(char* packetBuffer, char* seqNum, void* restrict dataBuffer, unsigned long dataBytes);

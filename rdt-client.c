@@ -28,6 +28,7 @@ int main(int argc, char* argv[]) {
 	unsigned long fileSize;
 	unsigned short optionsSize;	
 	unsigned char receivedACK;
+	unsigned long seqNum = 0;
 
 	//Parse Command Line Arguments
 	ParseCommandLineArguments(argc, argv, &serverIP, &serverPort, &filePath, &toFormat, &toName, &toNameSize, &lossProbability, &randomSeed);
@@ -118,7 +119,9 @@ int main(int argc, char* argv[]) {
 		}
 		
 		// Decrement the bytesRemaining
+		bytesRemaining += sizeof(char);
 		bytesRemaining -= bytesSent;
+		//printf9"Remaining bytes = %lu
 
 		// Increment the count
 		++count;
