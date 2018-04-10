@@ -146,7 +146,7 @@ int main(int argc, char* argv[]) {
 				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, remainingBytes);
 				printf("Received File Chunk %d from client ...\n", ++count);
 			}
-			fwrite(buffer, bytesReceived, 1, tempIn);
+			fwrite(buffer, bytesReceived - sizeof(char), 1, tempIn);
 	
 			// Decrement bytesToReceive
 			remainingBytes += sizeof(char);
