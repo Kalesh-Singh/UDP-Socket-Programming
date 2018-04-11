@@ -205,6 +205,8 @@ int main(int argc, char* argv[]) {
 		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &writeStatus, sizeof(writeStatus), &receivedACK, sizeof(receivedACK));
 		printf("Received Response ACK from client...\n");
 
+		sleep(5);
+
 		// close the socket to discard duplicataed ACKs
 		close(sock);
 

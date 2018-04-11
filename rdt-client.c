@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
 	while (tries > 0) {
 		if ((bytesSent = lossy_sendto(lossProbability, randomSeed, sock, sendPacketBuffer, packetLen, (struct sockaddr *) &serverAddress, sizeof(serverAddress))) != packetLen)
 				DieWithError("lossy_sendto() sent a different number of bytes than expected");
-		--secondsLeft;		
+		--tries;		
 	}
 	printf("Sent Response ACK to server...\n");
 
