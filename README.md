@@ -114,7 +114,7 @@ After inidcating that the ```options``` were correctly received, the server cont
 + The server sends a ```Response``` to the client acknowledging that it correctly received the ```options``` contained in the client's ```Request```.
 + Upon receiving the server's response acknowledging that it correctly received the ```options```, the client ```Responds``` by sending the file to the server.
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
-+ *_For both server and client, if an acknowledgement with correct sequence number is not received within ```100 retransmissions```, the application gives up trying to send the packet, and trows the error message ```No Response```_*
++ *_For both server and client, if an acknowledgement with correct sequence number is not received within ```100 retransmissions```, the application gives up trying to send the packet, and throws the error message ```No Response```_*
 
 ## Test Cases ##
 The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/UDP-Socket-Programming)  
