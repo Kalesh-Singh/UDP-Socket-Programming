@@ -55,10 +55,11 @@ The server should be invoked by the following command:
 ### Message Types, Syntax and Semantics for Client ###
 
 #### Note: ####
-+ All messages sent by the client contains a leading sequence number field which is one byte in size and has a value of either 0 or 1.
++ All messages sent by the client contains a leading sequence number field which is 1 byte in size and has a value of either 0 or 1.
 + For each consecutive send and receive the client increments the sequence number once using modulo 2 arithmetic.
 + The client's expected sequence number is the same as that of its last packet it sent.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
++ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```
 
 _The client sends 2 types of messages to the server:_
 + The first is a request to the server to receive the file.
@@ -69,7 +70,7 @@ The request to the server to receive the file contains also contains client spec
 ```seqNum``` ```toFormat``` ```toNameSize``` ```toName``` ```fileSize```  
 
 *Where:*
-+ ```seqNum``` is one bytes and indicates the sequence number of the sent packet. It's values is either 0 or 1.
++ ```seqNum``` is 1 byte and indicates the sequence number of the sent packet. It's values is either 0 or 1.
 + ```toFormat``` is one byte and indicates how the server should translate the received units..
 + ```toNameSize``` is one byte and therefore if the size of ```toName``` is greater than ```256```, the client throws an error ```FILE NAME TOO LONG``` and terminates.
 + ```toName``` is the name of the file to which the data must be written to on the server.
@@ -88,10 +89,11 @@ Upon receiving an acknowledgement from the server. The client compares the seque
 ### Message Types, Syntax and Semantics for Server ###
 
 #### Note: ####
-+ All messages sent by the server contains a leading sequence number field which is one byte in size and has a value of either 0 or 1.
++ All messages sent by the server contains a leading sequence number field which is 1 byte in size and has a value of either 0 or 1.
 + After each successful send the server increments the sequence number once using modulo 2 arithmetic.
 + Hence, the server's expected sequence number is that of its last packet it sent incremented once using modulo 2 arithmetic.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the server retransmits the last message, until an acknowledgement with the correct sequence number is received.
++ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```
 
 _The server sends 2 responses to the client:_
 
@@ -112,7 +114,7 @@ After inidcating that the options were correctly received, the server continuous
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
 
 ## Test Cases ##
-The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/TCPProgramming)  
+The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/UDP-Socket-Programming)  
 
 | Rationale | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
@@ -123,6 +125,7 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 | Testing for Incorrect Number (Non-Numeric ASCII Value in Type 1 Number) | ```test_incorrect_number``` | ```Format error``` | ```Format error``` | None |
 | Testing for Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | ```Format error``` | ```Format error``` | None |
 | Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None |
+| Testing for File Size larger than Buffer Size | ```large_file``` | ```Format error``` | ```Format error``` | None |
 
 ## Problems ##
 + There are no known problems with the client or server applications at present.
@@ -131,7 +134,7 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 + Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
 
 ## Github Repository ##
-[TCP Socket Programming](https://github.com/ZonalWings/TCPProgramming)
+[TCP Socket Programming](https://github.com/ZonalWings/UDP-Socket-Programming)
 
 ## Contributors ##
 + Kaleshwar Singh
