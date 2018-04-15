@@ -20,7 +20,7 @@ The client should be invoked by the following command:
 + ```filePath``` is the path of the file to be sent to the server. (The file path indicates the location of the file in the system on which the server runs. It includes the file name, and possibly the hierarchy of directories.) There is no size limit of the file. 
 + ```toFormat``` indicates how the server should translate the received units. ```0``` means no translation, ```1``` means to only translate ```Type 0``` units to ```Type 1``` with ```Type 1``` units unchanged, ```2``` means to only translate ```Type 1``` units to ```Type 0``` with ```Type 0``` units unchanged, and ```3``` means to translate ```Type 0``` to ```Type 1``` and ```Type 1``` to ```Type 0```. 
 + ```toName``` is the name of the file the server should save the units to.
-+ ```lossProbability``` is between 0 and 1 and is the probability os segement loss.
++ ```lossProbability``` is between 0 and 1 and is the probability of segment loss.
 + ```randomSeed``` is an integer to control random number generation.
 
 #### File Format ####
@@ -47,7 +47,7 @@ The server should be invoked by the following command:
 *Where:*
 + ```server``` is the name of the server executable file name.
 + ```port``` is the port the server listens to.
-+ ```lossProbability``` is between 0 and 1 and is the probability os segement loss.
++ ```lossProbability``` is between 0 and 1 and is the probability of segment loss.
 + ```randomSeed``` is an integer to control random number generation.
 
 ## Protocol ##
@@ -57,8 +57,8 @@ The server should be invoked by the following command:
 #### Note: ####
 + All messages sent by the client contains a leading sequence number field which is 1 byte in size and has a value of either 0 or 1.
 + For each consecutive send and receive the client increments the sequence number once using modulo 2 arithmetic.
-+ The client's expected sequence number is the same as that of its last packet it sent.
-+ If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
++ Hence, the client's expected sequence number is the same as that of its last sent packet.
++ If an acknowledgement is not received within ```2 seconds``` or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
 + Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```  
 
 _The client sends 2 types of messages to the server:_
@@ -70,9 +70,9 @@ The request to the server to receive the file contains also contains client spec
 ```seqNum``` ```toFormat``` ```toNameSize``` ```toName``` ```fileSize```  
 
 *Where:*
-+ ```seqNum``` is 1 byte and indicates the sequence number of the sent packet. It's values is either 0 or 1.
-+ ```toFormat``` is one byte and indicates how the server should translate the received units..
-+ ```toNameSize``` is one byte and therefore if the size of ```toName``` is greater than ```256```, the client throws an error ```FILE NAME TOO LONG``` and terminates.
++ ```seqNum``` is 1 byte and indicates the sequence number of the sent packet. Its value is either 0 or 1.
++ ```toFormat``` is 1 byte and indicates how the server should translate the received units..
++ ```toNameSize``` is 1 byte and therefore if the size of ```toName``` is greater than ```256```, the client throws an error ```FILE NAME TOO LONG``` and terminates.
 + ```toName``` is the name of the file to which the data must be written to on the server.
 + ```fileSize``` is the size in bytes of the file to be received by the server.
 
@@ -83,7 +83,7 @@ Upon receiving an acknowledgement from the server. The client compares the seque
 + If the two values are the same, the client responds by sending the file containing the units to the server. The file is sent in chunks of 1 KB. Except for the last chunk which may be less.   
 	```Chunk 1``` ```Chunk 2```.... ```Chunk N```  
 + Each chunk of file data also contains a leading 1 byte sequence number:  
-	```seqNum``` ```Chunk data```
+	```Chunk 1``` = ```Chunk 1 seqNum``` ```Chunk 1 Data```
 
 
 ### Message Types, Syntax and Semantics for Server ###
