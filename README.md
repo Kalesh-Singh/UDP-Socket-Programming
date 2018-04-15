@@ -59,7 +59,7 @@ The server should be invoked by the following command:
 + For each consecutive send and receive the client increments the sequence number once using modulo 2 arithmetic.
 + The client's expected sequence number is the same as that of its last packet it sent.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
-+ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```
++ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```  
 
 _The client sends 2 types of messages to the server:_
 + The first is a request to the server to receive the file.
@@ -93,7 +93,7 @@ Upon receiving an acknowledgement from the server. The client compares the seque
 + After each successful send the server increments the sequence number once using modulo 2 arithmetic.
 + Hence, the server's expected sequence number is that of its last packet it sent incremented once using modulo 2 arithmetic.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the server retransmits the last message, until an acknowledgement with the correct sequence number is received.
-+ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```
++ Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```  
 
 _The server sends 2 responses to the client:_
 
