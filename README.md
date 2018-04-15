@@ -53,14 +53,16 @@ The server should be invoked by the following command:
 ## Protocol ##
 
 ### Message Types, Syntax and Semantics for Client ###
-The client sends 2 types of messages to the server:
-+ The first is a request to the server to receive the file.
-+ The second is a response with the contents of the file.  
-*Note:*
+
+#### Note: ####
 + All messages sent by the client contains a leading sequence number field which is one byte in size and has a value of either 0 or 1.
 + For each consecutive send and receive the client increments the sequence number once using modulo 2 arithmetic.
 + The client's expected sequence number is the same as that of its last packet it sent.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
+
+_The client sends 2 types of messages to the server:_
++ The first is a request to the server to receive the file.
++ The second is a response with the contents of the file.  
 
 #### Request ####
 The request to the server to receive the file contains also contains client specified options that specify the operation the sever should perform on the file to be received. The client request has the following format:  
@@ -84,12 +86,14 @@ Upon receiving an acknowledgement from the server. The client compares the seque
 
 
 ### Message Types, Syntax and Semantics for Server ###
-The server sends 2 responses to the client.  
-*Note:*
+
+#### Note: ####
 + All messages sent by the server contains a leading sequence number field which is one byte in size and has a value of either 0 or 1.
 + After each successful send the server increments the sequence number once using modulo 2 arithmetic.
 + Hence, the server's expected sequence number is that of its last packet it sent incremented once using modulo 2 arithmetic.
 + If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the server retransmits the last message, until an acknowledgement with the correct sequence number is received.
+
+_The server sends 2 responses to the client:_
 
 #### Response 1 ####
 Upon receiving the ```options``` from the client the server send a response to client to indicate whether the ```options``` were correctly received or not. This is done by sending an acknowledgemnet with the same sequence number as that of the recieved ```options``` packet. server.
