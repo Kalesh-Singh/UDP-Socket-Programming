@@ -56,7 +56,7 @@ The server should be invoked by the following command:
 
 #### Note: ####
 + All messages sent by the client contains a leading sequence number field which is 1 byte in size and has a value of either 0 or 1.
-+ For each consecutive send and receive the client increments the sequence number once using modulo 2 arithmetic.
++ For each consecutive ```send and receive``` the client increments the sequence number once using modulo 2 arithmetic.
 + Hence, the client's expected sequence number is the same as that of its last sent packet.
 + If an acknowledgement is not received within ```2 seconds``` or if the received acknowledgement contains an incorrect sequence number, the client retransmits the last message, until an acknowledgement with the correct sequence number is received.
 + Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```  
@@ -90,18 +90,18 @@ Upon receiving an acknowledgement from the server. The client compares the seque
 
 #### Note: ####
 + All messages sent by the server contains a leading sequence number field which is 1 byte in size and has a value of either 0 or 1.
-+ After each successful send the server increments the sequence number once using modulo 2 arithmetic.
-+ Hence, the server's expected sequence number is that of its last packet it sent incremented once using modulo 2 arithmetic.
-+ If an acknowledgement is not received within 2 seconds or if the received acknowledgement contains an incorrect sequence number, the server retransmits the last message, until an acknowledgement with the correct sequence number is received.
++ After each successful ```send``` the server increments the sequence number once using modulo 2 arithmetic.
++ Hence, the server's expected sequence number is that of its last sent packet incremented once using modulo 2 arithmetic.
++ If an acknowledgement is not received within ```2 seconds``` or if the received acknowledgement contains an incorrect sequence number, the server retransmits the last message, until an acknowledgement with the correct sequence number is received.
 + Modulo 2 arithmetic: ```seqNum = (seqNum + 1) % 2```  
 
 _The server sends 2 responses to the client:_
 
 #### Response 1 ####
-Upon receiving the ```options``` from the client the server send a response to client to indicate whether the ```options``` were correctly received or not. This is done by sending an acknowledgemnet with the same sequence number as that of the recieved ```options``` packet. server.
+Upon receiving the ```options``` from the client the server send a response to client to indicate whether the ```options``` were correctly received or not. This is done by sending an acknowledgemnet with the same sequence number as that of the recieved ```options``` packet.
 
 #### Response 2 ####
-After inidcating that the options were correctly received, the server continuously receives data from the client until it has received a total amount of bytes equal to that specified by ```fileSize``` in the received options:
+After inidcating that the ```options``` were correctly received, the server continuously receives data from the client until it has received a total amount of bytes equal to that specified by ```fileSize``` in the received options:
 
 + If the file is correctly formatted the server performs the specified operations and responds with a byte containing the value ```0``` to the client. 
 + Else if the file is not correctly formatted, the server responds with a ```negative number``` depending on the type of format error detected.  
@@ -112,6 +112,7 @@ After inidcating that the options were correctly received, the server continuous
 + The server sends a ```Response``` to the client acknowledging that it correctly received the ```options``` contained in the client's ```Request```.
 + Upon receiving the server's response acknowledging that it correctly received the ```options```, the client ```Responds``` by sending the file to the server.
 + Upon receiving the file from the cilent, the server sends a ```Response``` to the client indicating whether the received file was incorrectly formatted or that the requested translation was successful.
++ *_For both server and client, if an acknowledgement with correct sequence number is not received within 100 retransmissions, the application gives up trying to send the packet, and trows the error message ```No Response```_*
 
 ## Test Cases ##
 The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/UDP-Socket-Programming)  
@@ -134,7 +135,7 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 + Donahoo, M. J., & Calvert, K. L. (2001). TCP/IP SOCKETS IN C: Practical Guide for Programmers (The Practical Guide Series). San Francisco, CA: Morgan Kaufmann.
 
 ## Github Repository ##
-[TCP Socket Programming](https://github.com/ZonalWings/UDP-Socket-Programming)
+[UDP Socket Programming](https://github.com/ZonalWings/UDP-Socket-Programming)
 
 ## Contributors ##
 + Kaleshwar Singh
