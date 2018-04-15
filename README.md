@@ -1,4 +1,4 @@
-# Reliable Data Transfer Protocol built on UDP #
+# Reliable Data Transfer Protocol Built On UDP #
 
 ## The Application Design ##
 This UDP Application Protocol is used to realiably send a file containing Units (as described below) from the client to server by implementing the Stop and Wait Protocol. The server receives the file and if it is correctly formatted it saves the file making any necessary translations between units as specified by the client. The server sends a response to the client indicating whether the operation was successuful or not.
