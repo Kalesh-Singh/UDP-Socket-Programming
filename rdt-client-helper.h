@@ -8,7 +8,7 @@
 
 #define BUFFER_SIZE 1000			// Buffer size
 #define TIMEOUT_SECS 2				// Timeout seconds
-#define MAX_TRIES 10				// Max tries before terminating (Peer inactive)
+#define MAX_TRIES 100				// Max tries before terminating (Peer inactive)
 
 extern int tries;
 extern long bytesReceived;					// Number of bytes received

@@ -132,7 +132,7 @@ int main(int argc, char* argv[]) {
 
 	printf("Sending Response ACK to server ...\n");
 	// Send Respose ACK repeatedly to ensure it is received; since no ACK will be sent by server
-	tries = 10;
+	tries = MAX_TRIES;
 
 	// Increment the sequence number
 	seqNum = (seqNum + 1) % 2;
