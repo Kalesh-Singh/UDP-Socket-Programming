@@ -123,7 +123,10 @@ Rationale | Input File | To Format | Expected Output | Actual Output | Error Obs
 :------- | :---- | :----- | :-------------- | :------------ | :-------------
 No Translation | ```test_file_1``` | 0 | ```Success``` - ```output``` == ```test_file_1``` | ```Success``` - ```output``` == ```test_file_1``` | None
 No Translation | ```test_file_2``` | 0 | ```Success``` - ```output``` the same as ```test_file_2``` | ```Success``` - ```output``` the same as ```test_file_2``` | None
-Type 0 to 1 Translation | ```test_file_1``` | ```Success``` - ```output```all Units Type 1 | ```Success``` - ```output```all Units Type 1 | None
+Type 0 to 1 Translation | ```test_file_1``` | 1 | ```Success``` - ```output``` - All Units Type 1 | ```Success``` - ```output``` - All Units Type 1 | None
+Type 0 to 1 Translation | ```test_file_2``` | 1 | ```Success``` - ```output``` - All Units Type 1 | ```Success``` - ```output``` - All Units Type 1 | None
+
+
 Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None
 Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None
 Testing for Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | ```Format error``` | ```Format error``` | None
