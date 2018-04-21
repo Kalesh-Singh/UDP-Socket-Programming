@@ -1,7 +1,7 @@
 # Reliable Data Transfer Protocol Built On UDP #
 
 ## The Application Design ##
-This UDP Application Protocol is used to realiably send a file containing Units (as described below) from the client to server by implementing the Stop and Wait Protocol. The server receives the file and if it is correctly formatted it saves the file making any necessary translations between units as specified by the client. The server sends a response to the client indicating whether the operation was successuful or not.
+This Application Protocol is used to realiably send a file containing Units (as described below) from the client to server by implementing the Stop and Wait Protocol at the Application Layer, since it uses UDP as the Transport Layer Protocol. The server receives the file and if it is correctly formatted it saves the file making any necessary translations between units as specified by the client. The server sends a response to the client indicating whether the operation was successuful or not.
 
 ## Architecture ##
 This Application uses the Client/Server Architecture.
@@ -121,7 +121,9 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 
 | Rationale | Input File | Expected Output | Actual Output | Error Observed |
 | :------- | :---- | :-------------- | :------------ | :------------- |
-| Testing for correct operation | ```practice_project_test_file_1``` | ```Success``` | ```Success``` | None |
+| Testing for correct translation from Type 0 to Type 0 and Type 1 to Type 1| ```practice_project_test_file_1``` | ```Success```  
+```output``` the same as ```practice_project_test_file_1``` | ```Success```  
+```output``` the same as ```practice_project_test_file_1``` | None |
 | Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None |
 | Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None |
 | Testing for Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | ```Format error``` | ```Format error``` | None |
