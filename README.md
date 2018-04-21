@@ -136,6 +136,8 @@ Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | N/A | `
 Empty File | ```test_empty_file``` | N/A | ```Success``` | ```Success``` | None
 File Size larger than Buffer Size | ```large_file.txt``` | N/A | ```Format error``` | ```Format error``` | None
 
+*Note: By printing the file written on the server, the correctness of the translated file is checked. If the file was not translated correctly, the request to print the file will either throw an error or the file will be printed with incorrect values.*
+
 ## Problems ##
 + There are no known problems with the client or server applications at present.
 
