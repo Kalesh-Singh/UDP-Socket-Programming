@@ -122,18 +122,19 @@ The Input files used in the test can be found in the ```test_cases``` folder in 
 Rationale | Input File | To Format | Expected Output | Actual Output | Error Observed
 :------- | :---- | :----- | :-------------- | :------------ | :-------------
 No Translation | ```test_file_1``` | 0 | ```Success``` - ```output``` == ```test_file_1``` | ```Success``` - ```output``` == ```test_file_1``` | None
-No Translation | ```test_file_2``` | 0 | ```Success``` - ```output``` the same as ```test_file_2``` | ```Success``` - ```output``` the same as ```test_file_2``` | None
+No Translation | ```test_file_2``` | 0 | ```Success``` - ```output``` == ```test_file_2``` | ```Success``` - ```output``` == ```test_file_2``` | None
 Type 0 to 1 Translation | ```test_file_1``` | 1 | ```Success``` - ```output``` - All Units Type 1 | ```Success``` - ```output``` - All Units Type 1 | None
-Type 0 to 1 Translation | ```test_file_2``` | 1 | ```Success``` - ```output``` - All Units Type 1 | ```Success``` - ```output``` - All Units Type 1 | None
-
-
-Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None
-Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None
-Testing for Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | ```Format error``` | ```Format error``` | None
-Testing for Incorrect Number (Non-Numeric ASCII Value in Type 1 Number) | ```test_incorrect_number``` | ```Format error``` | ```Format error``` | None
-Testing for Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | ```Format error``` | ```Format error``` | None
-Testing for Empty File | ```test_empty_file``` | ```Success``` | ```Success``` | None
-Testing for File Size larger than Buffer Size | ```large_file.txt``` | ```Format error``` | ```Format error``` | None
+Type 0 to 1 Translation | ```test_file_2``` | 1 | ```Success``` - ```output``` - All Units Type 1 | ```Success``` - ```output``` - All Units Type 0 | None
+Type 1 to 0 Translation | ```test_file_1``` | 2 | ```Success``` - ```output``` - All Units Type 0 | ```Success``` - ```output``` - All Units Type 0 | None
+Type 1 to 0 Translation | ```test_file_2``` | 2 | ```Success``` - ```output``` - All Units Type 0 | ```Success``` - ```output``` - All Units Type 0 | None
+Both Translations | ```test_file_1``` | 3 | ```Success``` - ```output``` == ```test_file_2``` | ```Success``` - ```output``` == ```test_file_2``` | None
+Both Translations | ```test_file_2``` | 3 | ```Success``` - ```output``` == ```test_file_1``` | ```Success``` - ```output``` == ```test_file_1``` | None
+Incorrect Type | ```test_incorrect_type``` | N/A |```Format error``` | ```Format error``` | None
+Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | N/A | ```Format error``` | ```Format error``` | None
+Incorrect Number (Non-Numeric ASCII Value in Type 1 Number) | ```test_incorrect_number``` | N/A | ```Format error``` | ```Format error``` | None
+Consecutive Commas (In Type 1 Numbers) | ```test_consecutive_commas``` | N/A | ```Format error``` | ```Format error``` | None
+Empty File | ```test_empty_file``` | N/A | ```Success``` | ```Success``` | None
+File Size larger than Buffer Size | ```large_file.txt``` | N/A | ```Format error``` | ```Format error``` | None
 
 ## Problems ##
 + There are no known problems with the client or server applications at present.
