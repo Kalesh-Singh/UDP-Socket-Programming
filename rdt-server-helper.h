@@ -21,7 +21,7 @@ void DieWithError(char* errorMessage);
 void ParseCommandLineArguments(int argc, char* argv[], unsigned short* serverPort, float* lossProbability, int* randomSeed);
 void CatchAlarm(int ignored);			// Handler for SIGALARM
 
-void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);
+void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive);
 
 unsigned long makePacket(char* packetBuffer, char* seqNum, void* restrict dataBuffer, unsigned long dataBytes);
 void extractPacket(char* packetBuffer, char* seqNum, void* restrict dataBuffer, unsigned long dataBytes);

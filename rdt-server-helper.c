@@ -34,9 +34,9 @@ void CatchAlarm(int ignored) {
 	tries += 1;
 }
 
-void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, const struct sockaddr_in* fromAddr, socklen_t fromAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive) {
+void send_wait(int sock, float lossProbability, int randomSeed, const struct sockaddr_in* destAddr, socklen_t destAddrLen, void* restrict sendBuffer, unsigned long bytesToSend, void *restrict recvBuffer, unsigned long bytesToReceive) {
 
-	// Make the packe to send
+	// Make the packet to send
 	unsigned long packetLen = makePacket(sendPacketBuffer, &seqNum, sendBuffer, bytesToSend);
 
 	// Send the data 
@@ -55,7 +55,7 @@ void send_wait(int sock, float lossProbability, int randomSeed, const struct soc
 	// Invalidate the recv packet buffer
 	memset (recvPacketBuffer, -1, BUFFER_SIZE + 1);
 	
-	while (((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + bytesToReceive, 0, (struct sockaddr *) fromAddr, &fromAddrLen)) < 0) || (recvPacketBuffer[0] != seqNum)) {
+	while (((bytesReceived = recvfrom(sock, recvPacketBuffer, sizeof(char) + bytesToReceive, 0, (struct sockaddr *) destAddr, &destAddrLen)) < 0) || (recvPacketBuffer[0] != seqNum)) {
 		printf("Expected Sequence Number = %d\n", seqNum);
 		printf("Received Sequnece Number = %d\n", recvPacketBuffer[0]);
 		if (errno == EINTR)	{			// Alarm went off

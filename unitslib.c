@@ -173,9 +173,12 @@ void writeType0FromType1(FILE* out, uint8_t amount, uint8_t* buffer, int unitSiz
 	}
 
 	uint16_t t0Nums[amount];
+	char* pEnd;
 
 	for (int i = 0; i < amount; ++i) {
-		uint16_t t0Num = atoi(t1Nums[i]);
+		char temp[5];
+		memcpy(temp, t1Nums[i], 5);
+		uint16_t t0Num = (uint16_t) strtol(temp, &pEnd, 10);
 		t0Nums[i] = (t0Num << 8) | (t0Num >> 8);
 	}
 
@@ -281,6 +284,7 @@ int writeUnits(FILE* in, FILE* out, char toFormat) {
         // Get the Type of the Unit
 		uint8_t type = getType(in);
         printf("Type: %d\t\t", type);
+		fflush(stdout);
 
         if (type == 0) {
             // Get the amount in the unit
@@ -302,7 +306,9 @@ int writeUnits(FILE* in, FILE* out, char toFormat) {
 
 			// Print the Numbers to the Screen
 			printT0Numbers(buffer, amount);
+			fflush(stdout);
 			printf("\n");
+			fflush(stdout);
 
 			if ((toFormat == 0) || (toFormat == 2)) {
 				// Write the Type 0 Unit to the output file
@@ -350,7 +356,9 @@ int writeUnits(FILE* in, FILE* out, char toFormat) {
 
 			// Print the Numbers to the screen
 			printT1Numbers(buffer, unitSize);
+			fflush(stdout);
 			printf("\n");
+			fflush(stdout);
 
 			if ((toFormat == 0) || (toFormat == 1)) {
 				// Write Type 1 to the out file
@@ -367,6 +375,7 @@ int writeUnits(FILE* in, FILE* out, char toFormat) {
     } 
 
 	if (toFormat != -1) {
+		fflush(stdout);
 		writeUnits(out, in, -1);
 	}
 

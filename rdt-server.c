@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
 
 		// Send Positive ACK and wait for Options Packet from server
 		printf("Sending ACK for optionsSize...\n");
-		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, optionsSize);
+		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, optionsSize);
 		printf("Received Options Package ...\n");
 
 		// Parse the options
@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
 				else 
 					printf("Sending ACK File Chunk  %d...\n", count);
 
-				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, BUFFER_SIZE);
+				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, BUFFER_SIZE);
 				printf("Received File Chunk %d from client ...\n", ++count);
 			} else {
 				if (count == 0) 
@@ -134,7 +134,7 @@ int main(int argc, char* argv[]) {
 				else 
 					printf("Sending ACK File Chunk  %d...\n", count);
 
-				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, remainingBytes);
+				send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), buffer, remainingBytes);
 				printf("Received File Chunk %d from client ...\n", ++count);
 			}
 			fwrite(buffer, bytesReceived - sizeof(char), 1, tempIn);
@@ -149,7 +149,7 @@ int main(int argc, char* argv[]) {
 
 		// Send ACK for last file chunk and wait for ACK
 		printf("Sending ACK File Chunk  %d...\n", count);
-		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), &receivedACK, sizeof(receivedACK));
+		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &positiveACK, sizeof(positiveACK), &receivedACK, sizeof(receivedACK));
 		printf("Received FILE COMPLETE from client ...\n");
 
 		printf("Received file from client...\n");
@@ -202,7 +202,7 @@ int main(int argc, char* argv[]) {
 
 
 		printf("Sending Server Response to client...\n");
-		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &clientAddress, clientAddrLen, &writeStatus, sizeof(writeStatus), &receivedACK, sizeof(receivedACK));
+		send_wait(sock, lossProbability, randomSeed, &clientAddress, clientAddrLen, &writeStatus, sizeof(writeStatus), &receivedACK, sizeof(receivedACK));
 		printf("Received Response ACK from client...\n");
 
 		sleep(5);
