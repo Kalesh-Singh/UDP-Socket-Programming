@@ -119,9 +119,11 @@ After inidcating that the ```options``` were correctly received, the server cont
 ## Test Cases ##
 The Input files used in the test can be found in the ```test_cases``` folder in the [GitHub Repository](https://github.com/ZonalWings/UDP-Socket-Programming)  
 
-| Rationale | Input File | Expected Output | Actual Output | Error Observed |
-| :------- | :---- | :-------------- | :------------ | :------------- |
-| Testing for correct translation from Type 0 to Type 0 and Type 1 to Type 1| ```practice_project_test_file_1``` | ```Success``` - ```output``` the same as ```practice_project_test_file_1``` | ```Success``` - ``output``` the same as ```practice_project_test_file_1``` | None |
+| Rationale | Input File | To Format | Expected Output | Actual Output | Error Observed |
+| :------- | :---- | :----- | :-------------- | :------------ | :------------- |
+| Testing for correct translation from Type 0 to Type 0 and Type 1 to Type 1| ```practice_project_test_file_1``` | 0 | ```Success``` - ```output``` the same as ```practice_project_test_file_1``` | ```Success``` - ```output``` the same as ```practice_project_test_file_1``` | None |
+| Testing for correct translation from Type 0 to Type 1 and Type 1 to Type 1| ```practice_project_test_file_2``` | 0 | ```Success``` - ```output``` the same as ```practice_project_test_file_2``` | ```Success``` - ```output``` the same as ```practice_project_test_file_2``` | None |
+| Testing for correct translation from Type 0 to Type 0 and Type 1 to Type 1| ```practice_project_test_file_2``` | ```Success``` - ```output``` the same as ```practice_project_test_file_2``` | ```Success``` - ```output``` the same as ```practice_project_test_file_2``` | None |
 | Testing for correct operation | ```practice_project_test_file_2``` | ```Success``` | ```Success``` | None |
 | Testing for Incorrect Type | ```test_incorrect_type``` | ```Format error``` | ```Format error``` | None |
 | Testing for Incorrect Amount (Non-Numeric ASCII Value in Type 1 Amount) | ```test_incorrect_amount``` | ```Format error``` | ```Format error``` | None |
